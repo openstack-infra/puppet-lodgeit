@@ -22,12 +22,6 @@ class lodgeit {
     ensure => present,
   }
 
-  if ! defined(Package['python-mysqldb']) {
-    package { 'python-mysqldb':
-      ensure   => present,
-    }
-  }
-
   package { 'SQLAlchemy':
     ensure   => present,
     provider => pip,
