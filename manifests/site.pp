@@ -9,9 +9,9 @@ define lodgeit::site(
   $vhost_name="paste.${name}.org",
   $image='') {
 
-  include apache
+  include ::httpd
 
-  apache::vhost::proxy { $vhost_name:
+  ::httpd::vhost::proxy { $vhost_name:
     port    => 80,
     dest    => "http://localhost:${port}",
     require => File["/srv/lodgeit/${name}"],
@@ -21,7 +21,7 @@ define lodgeit::site(
     ensure  => present,
     content => template('lodgeit/upstart.erb'),
     replace => true,
-    require => Package[$::apache::params::apache_name],
+    require => Class['httpd'],
     notify  => Service["${name}-paste"],
   }
 
@@ -66,6 +66,6 @@ define lodgeit::site(
   service { "${name}-paste":
     ensure    => running,
     provider  => upstart,
-    require   => Service[$::apache::params::apache_name],
+    require   => Class['httpd'],
   }
 }

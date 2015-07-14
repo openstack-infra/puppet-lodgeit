@@ -8,13 +8,13 @@ class lodgeit {
                 'python-simplejson',
                 'python-pygments']
 
-  include apache
+  include ::httpd
 
   include pip
-  a2mod { 'proxy':
+  httpd_mod { 'proxy':
     ensure => present,
   }
-  a2mod { 'proxy_http':
+  httpd_mod { 'proxy_http':
     ensure => present,
   }
 
