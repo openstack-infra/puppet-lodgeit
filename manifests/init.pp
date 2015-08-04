@@ -10,7 +10,7 @@ class lodgeit {
 
   include ::httpd
 
-  include pip
+  include ::pip
   httpd_mod { 'proxy':
     ensure => present,
   }

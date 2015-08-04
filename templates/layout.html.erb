@@ -19,7 +19,7 @@
     <div class="page">
       <div id="header">
         <h1>
-          <% if has_variable?("image") then %>
+          <% if @image != nil then %>
           <img src="/static/<%= @image %>" style="padding-bottom: 10px; margin-left: 10px;" alt="<%= @name.capitalize %> Pastebin" />
           <% else %>
           <%= @name.capitalize %> Pastebin

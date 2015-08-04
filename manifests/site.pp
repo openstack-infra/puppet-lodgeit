@@ -7,7 +7,8 @@ define lodgeit::site(
   $db_host='locahost',
   $db_user=$name,
   $vhost_name="paste.${name}.org",
-  $image='') {
+  $image=undef
+) {
 
   include ::httpd
 
@@ -31,7 +32,7 @@ define lodgeit::site(
     source  => '/tmp/lodgeit-main',
   }
 
-  if $image != '' {
+  if $image != undef {
     file { "/srv/lodgeit/${name}/lodgeit/static/${image}":
       ensure => present,
       source => "puppet:///modules/lodgeit/${image}",
@@ -64,8 +65,8 @@ define lodgeit::site(
   }
 
   service { "${name}-paste":
-    ensure    => running,
-    provider  => upstart,
-    require   => Class['httpd'],
+    ensure   => running,
+    provider => upstart,
+    require  => Class['httpd'],
   }
 }
