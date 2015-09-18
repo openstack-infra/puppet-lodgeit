@@ -4,7 +4,7 @@
 define lodgeit::site(
   $port,
   $db_password,
-  $db_host='locahost',
+  $db_host='localhost',
   $db_user=$name,
   $vhost_name="paste.${name}.org",
   $image=undef
