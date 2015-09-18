@@ -28,3 +28,7 @@ group :development, :test do
 end
 
 # vim:ft=ruby
+
+group :system_tests do
+  gem 'beaker-rspec', :require => false
+end
