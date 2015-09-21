@@ -7,7 +7,8 @@ define lodgeit::site(
   $db_host='localhost',
   $db_user=$name,
   $vhost_name="paste.${name}.org",
-  $image=undef
+  $image=undef,
+  $robotstxt=true
 ) {
 
   include ::httpd
@@ -53,6 +54,16 @@ define lodgeit::site(
     content => template('lodgeit/layout.html.erb'),
   }
 
+  if $robotstxt != undef {
+    file { "/srv/lodgeit/${name}/robots.txt":
+      ensure  => present,
+      owner   => 'root',
+      group   => 'root',
+      mode    => '0444',
+      source  => 'puppet:///modules/lodgeit/robots.txt',
+      require => File["/srv/lodgeit/${name}/"],
+    }
+  }
   cron { "update_backup_${name}":
     ensure => absent,
     user   => root,
