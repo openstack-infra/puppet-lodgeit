@@ -14,9 +14,10 @@ define lodgeit::site(
   include ::httpd
 
   ::httpd::vhost::proxy { $vhost_name:
-    port    => 80,
-    dest    => "http://localhost:${port}",
-    require => File["/srv/lodgeit/${name}"],
+    port            => 80,
+    dest            => "http://localhost:${port}",
+    require         => File["/srv/lodgeit/${name}"],
+    proxyexclusions => ['/robots.txt'],
   }
 
   file { "/etc/init/${name}-paste.conf":
