@@ -16,8 +16,9 @@ define lodgeit::site(
   ::httpd::vhost::proxy { $vhost_name:
     port            => 80,
     dest            => "http://localhost:${port}",
-    require         => File["/srv/lodgeit/${name}"],
+    require         => [File["/srv/lodgeit/${name}"], File["/srv/www/${name}"]],
     proxyexclusions => ['/robots.txt'],
+    docroot         => "/srv/www/${name}/"
   }
 
   file { "/etc/init/${name}-paste.conf":
@@ -56,13 +57,18 @@ define lodgeit::site(
   }
 
   if $robotstxt {
-    file { "/srv/lodgeit/${name}/robots.txt":
+
+    file { ['/srv/www', "/srv/www/${name}"]:
+      ensure  => directory,
+    }
+
+    file { "/srv/www/${name}/robots.txt":
       ensure  => present,
       owner   => 'root',
       group   => 'root',
       mode    => '0444',
       source  => 'puppet:///modules/lodgeit/robots.txt',
-      require => File["/srv/lodgeit/${name}/"],
+      require => File["/srv/www/${name}/"],
     }
   }
   cron { "update_backup_${name}":
