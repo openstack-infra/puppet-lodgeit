@@ -1,0 +1,11 @@
+[Unit]
+Description=The %i LodgeIt Application
+After=network.target basic.target
+
+[Service]
+EnvironmentFile=-/etc/sysconfig/lodgeit-%i
+ExecStart=/bin/python /srv/lodgeit/%i/manage.py runserver -h ${LISTEN} -p ${PORT}
+ExecStop=/bin/kill -WINCH ${MAINPID}
+
+[Install]
+WantedBy=multi-user.target
