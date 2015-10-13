@@ -1,29 +1,27 @@
 # == Class: lodgeit
 #
 class lodgeit {
-  $packages = [ 'python-imaging',
-                'python-jinja2',
-                'python-pybabel',
-                'python-werkzeug',
-                'python-simplejson',
-                'python-pygments']
+
+  include lodgeit::params
 
   include ::httpd
-
   include ::pip
-  httpd_mod { 'proxy':
-    ensure => present,
+
+  # The httpd module supports only Debian/Ubuntu (requires a2enmod)
+  # On EL7 derivative both of those modules are part of the httpd package
+  # Hence there is no need for extra action
+  if $::osfamily == 'Debian' {
+    httpd_mod { ['proxy', 'proxy_http'] :
+      ensure => present,
+    }
   }
-  httpd_mod { 'proxy_http':
+
+  package { $::lodgeit::params::system_packages:
     ensure => present,
   }
 
-  package { $packages:
-    ensure => present,
-  }
-
-  if ! defined(Package['python-mysqldb']) {
-    package { 'python-mysqldb':
+  if ! defined(Package[$::lodgeit::params::mysql_python_package]) {
+    package { $::lodgeit::params::mysql_python_package:
       ensure   => present,
     }
   }
@@ -43,5 +41,19 @@ class lodgeit {
     provider => git,
     source   => 'https://git.openstack.org/openstack-infra/lodgeit',
   }
+
+  if $::osfamily == 'RedHat' {
+
+    file { '/etc/systemd/system/lodgeit@.service':
+      ensure  => present,
+      owner   => 'root',
+      group   => 'root',
+      mode    => '0644',
+      source  => 'puppet:///modules/lodgeit/lodgeit.service',
+    } ~>
+    exec { '/bin/systemctl daemon-reload' : }
+
+  }
+
 
 }

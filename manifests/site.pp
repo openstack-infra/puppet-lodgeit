@@ -12,21 +12,38 @@ define lodgeit::site(
 ) {
 
   include ::httpd
+  include ::lodgeit::params
 
   ::httpd::vhost::proxy { $vhost_name:
     port            => 80,
-    dest            => "http://localhost:${port}",
+    dest            => "http://127.0.0.1:${port}",
     require         => [File["/srv/lodgeit/${name}"], File["/srv/www/${name}"]],
     proxyexclusions => ['/robots.txt'],
     docroot         => "/srv/www/${name}/"
   }
 
-  file { "/etc/init/${name}-paste.conf":
-    ensure  => present,
-    content => template('lodgeit/upstart.erb'),
-    replace => true,
-    require => Class['httpd'],
-    notify  => Service["${name}-paste"],
+  if $::osfamily == 'RedHat' {
+
+    Exec['/bin/systemctl daemon-reload'] -> Service["lodgeit@${name}"]
+
+    $service_name = "lodgeit@${name}"
+
+    file { "/etc/sysconfig/lodgeit-${name}":
+      ensure  => present,
+      content => "PORT=${port}\nLISTEN=127.0.0.1",
+      notify  => Service[$service_name],
+    }
+
+  } else {
+
+    $service_name = "${name}-paste"
+
+    file { "/etc/init/${name}-paste.conf":
+      ensure  => present,
+      content => template('lodgeit/upstart.erb'),
+      replace => true,
+      notify  => Service[$service_name],
+    }
   }
 
   file { "/srv/lodgeit/${name}":
@@ -47,7 +64,7 @@ define lodgeit::site(
     mode    => '0755',
     replace => true,
     content => template('lodgeit/manage.py.erb'),
-    notify  => Service["${name}-paste"],
+    notify  => Service[$service_name],
   }
 
   file { "/srv/lodgeit/${name}/lodgeit/views/layout.html":
@@ -70,20 +87,21 @@ define lodgeit::site(
       require => File["/srv/www/${name}/"],
     }
   }
-  cron { "update_backup_${name}":
-    ensure => absent,
-    user   => root,
-  }
+ cron { "update_backup_${name}":
+   ensure => absent,
+   user   => root,
+ }
 
-  mysql_backup::backup_remote { $name:
-    database_host     => $db_host,
-    database_user     => $db_user,
-    database_password => $db_password,
-  }
+ mysql_backup::backup_remote { $name:
+   database_host     => $db_host,
+   database_user     => $db_user,
+   database_password => $db_password,
+ }
 
-  service { "${name}-paste":
-    ensure   => running,
-    provider => upstart,
-    require  => Class['httpd'],
-  }
+ service { $service_name:
+   ensure   => running,
+   provider => $::lodgeit::params::service_provider,
+   require  => Class['httpd'],
+ }
+
 }
