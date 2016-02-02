@@ -1,5 +1,10 @@
 class { '::mysql::server':
-  config_hash => { 'root_password' => '123456' },
+  root_password    => $mysql_root_password,
+  override_options => {
+    'mysqld' => {
+      'default-storage-engine' => 'InnoDB',
+    }
+  }
 }
 
 mysql::db { 'acceptance':
