@@ -1,10 +1,10 @@
 # == Class: puppet-lodgeit::mysql
 #
 class lodgeit::mysql(
+  $database_password,
   $mysql_root_password,
   $database_name = $name,
   $database_user = $name,
-  $database_password,
 ) {
   class { '::mysql::server':
     root_password    => $mysql_root_password,
