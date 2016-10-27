@@ -48,6 +48,14 @@
       </ul> #}
       <div class="content">
         <h2>{{ page_title|e }}</h2>
+        <% if @expire_pastes_days then %>
+          <div class="notification">
+            <h3>{% trans %}Expiration Notice{% endtrans %}</h3>
+            <p>
+              All Pastes expire after <%= @expire_pastes_days %> days.
+            </p>
+          </div>
+        <% end %>
         {%- if new_replies %}
           <div class="notification">
             <h3>{% trans %}Someone Replied To Your Paste{% endtrans %}</h3>

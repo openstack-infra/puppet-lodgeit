@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# this tool to expire older entries from lodgeit database
+
+CONFIGFILE='/root/.<%= @db_name %>_db.cnf'
+
+if [ ! -f $CONFIGFILE ]; then
+    PARAMS=''
+else
+    PARAMS=" --defaults-extra-file=$CONFIGFILE"
+fi
+
+MAX_DAYS=${1:?Usage ./expire_pastes.sh MAX_DAYS}
+EXPIRED=`mysql ${PARAMS} <%= @db_name %> -e "select paste_id, pub_date, datediff(now(), pub_date) from pastes where datediff(now(), pub_date) >= ${MAX_DAYS} and code != \"Paste Expired\";"`
+if [[ "${EXPIRED}" ]]; then
+  echo "Expiring the following pastes:"
+  echo "${EXPIRED}"
+  mysql ${PARAMS} <%= @db_name %> -e "update pastes set code = \"Paste Expired\" where datediff(now(), pub_date) >= ${MAX_DAYS} and code != \"Paste Expired\";"
+fi
