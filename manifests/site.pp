@@ -4,12 +4,20 @@
 define lodgeit::site(
   $db_password,
   $port,
-  $db_host    = 'localhost',
-  $db_name    = $name,
-  $db_user    = $name,
-  $image      = undef,
-  $robotstxt  = true,
-  $vhost_name = "paste.${name}.org",
+  $db_host            = 'localhost',
+  $db_name            = $name,
+  $db_user            = $name,
+  $expire_pastes_days = undef,
+  $image              = undef,
+  $robotstxt          = true,
+  $vhost_name         = "paste.${name}.org",
+  $expire_pastes_cron_interval =
+    { minute   => undef,
+      hour     => undef,
+      monthday => undef,
+      month    => undef,
+      weekday  => undef,
+    },
 ) {
 
   include ::httpd
@@ -86,5 +94,33 @@ define lodgeit::site(
     ensure   => running,
     provider => upstart,
     require  => Class['httpd'],
+  }
+
+  if $expire_pastes_days {
+    # Ensure expiration is a positive number
+    validate_re($expire_pastes_days, '^\d.*$')
+    $ensure_expire = present
+  } else {
+    $ensure_expire = absent
+  }
+
+  file { '/usr/local/bin/expire_pastes.sh':
+    ensure  => $ensure_expire,
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0755',
+    content => template('lodgeit/expire_pastes.sh.erb'),
+  }
+
+  cron { 'expire_pastes':
+    ensure   => $ensure_expire,
+    user     => $db_user,
+    minute   => $expire_pastes_cron_interval[minute],
+    hour     => $expire_pastes_cron_interval[hour],
+    monthday => $expire_pastes_cron_interval[monthday],
+    month    => $expire_pastes_cron_interval[month],
+    weekday  => $expire_pastes_cron_interval[weekday],
+    command  => "/usr/local/bin/expire_pastes.sh ${expire_pastes_days} 2>&1 | logger -t expire_pastes",
+    require  => File['/usr/local/bin/expire_pastes.sh'],
   }
 }
