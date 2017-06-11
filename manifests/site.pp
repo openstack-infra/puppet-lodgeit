@@ -22,12 +22,22 @@ define lodgeit::site(
     docroot         => "/srv/www/${name}/"
   }
 
-  file { "/etc/init/${name}-paste.conf":
-    ensure  => present,
-    content => template('lodgeit/upstart.erb'),
-    replace => true,
-    require => Class['httpd'],
-    notify  => Service["${name}-paste"],
+  if versioncmp($::operatingsystemmajrelease, '16.04') >= 0 {
+    file { "/etc/systemd/system/${name}-paste.service":
+      ensure  => present,
+      content => template('lodgeit/systemd.erb'),
+      replace => true,
+      require => Class['httpd'],
+      notify  => Service["${name}-paste"],
+    }
+  } else {
+    file { "/etc/init/${name}-paste.conf":
+      ensure  => present,
+      content => template('lodgeit/upstart.erb'),
+      replace => true,
+      require => Class['httpd'],
+      notify  => Service["${name}-paste"],
+    }
   }
 
   file { "/srv/lodgeit/${name}":
@@ -83,8 +93,8 @@ define lodgeit::site(
   }
 
   service { "${name}-paste":
-    ensure   => running,
-    provider => upstart,
-    require  => Class['httpd'],
+    ensure  => running,
+    enable  => true,
+    require => Class['httpd'],
   }
 }
