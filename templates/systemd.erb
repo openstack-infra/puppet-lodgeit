@@ -1,5 +1,6 @@
 [Unit]
 Description="<%= @name %> Lodgeit server"
+After=network-online.target
 
 [Service]
 ExecStart=/usr/bin/python /srv/lodgeit/<%= @name %>/manage.py runserver -h 127.0.0.1 -p <%= @port %>
