@@ -1,3 +1,3 @@
-# OpenStack LodgeIt Module
+# This repo has moved to OpenDev
 
-This module installs and configures LodgeIt
+It can now be found at [https://opendev.org/opendev/puppet-lodgeit](https://opendev.org/opendev/puppet-lodgeit)
